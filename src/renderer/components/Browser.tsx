@@ -1,18 +1,20 @@
 import React from 'react';
 import { Tab } from './App';
 import '../styles/Browser.css';
+import NewTabPage from './NewTabPage';
+import '../styles/NewTabPage.css';
 
 interface BrowserProps {
   tab: Tab;
+  navigateTo: (url: string) => void;
 }
 
-const Browser: React.FC<BrowserProps> = ({ tab }) => {
+const Browser: React.FC<BrowserProps> = ({ tab, navigateTo }) => {
   return (
     <div className="browser-container">
       {tab.url === 'about:blank' ? (
-        <div className="empty-page">
-          <h1>New Tab</h1>
-          <p>Enter a URL in the address bar above to start browsing.</p>
+        <div className="new-tab-container">
+          <NewTabPage navigateTo={navigateTo} />
         </div>
       ) : (
         // This is just a placeholder - actual content is rendered by BrowserView in the main process

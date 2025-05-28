@@ -1,12 +1,11 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
-// Expose protected methods that allow the renderer process to use
-// the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
   // Tab management
   createTab: (id: string, url: string) => ipcRenderer.invoke('create-tab', { id, url }),
   switchTab: (id: string) => ipcRenderer.invoke('switch-tab', { id }),
   closeTab: (id: string) => ipcRenderer.invoke('close-tab', { id }),
+  hideAllBrowserViews: () => ipcRenderer.invoke('hide-all-browser-views'),
 
   // Navigation
   navigateToUrl: (id: string, url: string) => ipcRenderer.invoke('navigate-to-url', { id, url }),
@@ -41,6 +40,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('tab-url-updated', (_event, data) => callback(data));
     return () => {
       ipcRenderer.removeAllListeners('tab-url-updated');
+    };
+  },
+
+  onBrowserViewsHidden: (callback: () => void) => {
+    ipcRenderer.on('browser-views-hidden', (_event) => callback());
+    return () => {
+      ipcRenderer.removeAllListeners('browser-views-hidden');
     };
   },
 });

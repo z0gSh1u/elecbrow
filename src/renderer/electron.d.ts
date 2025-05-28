@@ -3,6 +3,7 @@ interface ElectronAPI {
   createTab: (id: string, url: string) => Promise<boolean>;
   switchTab: (id: string) => Promise<boolean>;
   closeTab: (id: string) => Promise<boolean>;
+  hideAllBrowserViews: () => Promise<boolean>;
 
   // Navigation
   navigateToUrl: (id: string, url: string) => Promise<boolean>;
@@ -15,6 +16,7 @@ interface ElectronAPI {
   onTabTitleUpdated: (callback: (data: { id: string; title: string }) => void) => () => void;
   onTabLoading: (callback: (data: { id: string; isLoading: boolean }) => void) => () => void;
   onTabUrlUpdated: (callback: (data: { id: string; url: string }) => void) => () => void;
+  onBrowserViewsHidden: (callback: () => void) => () => void;
 }
 
 interface HTMLWebViewElement extends HTMLElement {

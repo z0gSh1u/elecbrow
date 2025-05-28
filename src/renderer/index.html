@@ -6,7 +6,17 @@
       http-equiv="Content-Security-Policy"
       content="default-src * data: blob: 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'"
     />
-    <title>ElecBrow - Electron Browser</title>
+    <title>ElecBrow - Electron Simulated Multi-Tab Browser</title>
+    <style>
+      html,
+      body,
+      #root {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

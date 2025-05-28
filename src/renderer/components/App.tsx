@@ -46,13 +46,34 @@ const App: React.FC = () => {
       updateTabUrl(data.id, data.url);
     });
 
+    // Listen for browser views hidden event
+    const hiddenCleanup = window.electronAPI.onBrowserViewsHidden(() => {
+      // Force a re-render when browser views are hidden
+      setTabs((prevTabs) => [...prevTabs]);
+    });
+
     return () => {
       newTabCleanup();
       titleCleanup();
       loadingCleanup();
       urlCleanup();
+      hiddenCleanup();
     };
   }, []);
+
+  // Update the CSS style for browser views
+  useEffect(() => {
+    // Add a CSS class to the app element when the active tab is a new tab page
+    const appElement = document.querySelector('.app');
+    if (appElement) {
+      const activeTab = tabs.find((tab) => tab.isActive);
+      if (activeTab?.url === 'about:blank') {
+        appElement.classList.add('new-tab-active');
+      } else {
+        appElement.classList.remove('new-tab-active');
+      }
+    }
+  }, [tabs]);
 
   // Create a new tab
   const createTab = async (url: string = 'about:blank') => {
@@ -68,14 +89,17 @@ const App: React.FC = () => {
     // First update local state
     setTabs((prevTabs) => prevTabs.map((tab) => ({ ...tab, isActive: false })).concat(newTab));
 
-    // Then create browser view in main process if it's not about:blank
-    if (url !== 'about:blank') {
+    // For about:blank, just hide any active browser views
+    if (url === 'about:blank') {
+      await window.electronAPI.hideAllBrowserViews();
+    } else {
+      // For real URLs, create browser view in main process
       const success = await window.electronAPI.createTab(id, url);
       if (!success) {
         console.error('Failed to create browser view');
       } else {
         // Switch to this tab
-        window.electronAPI.switchTab(id);
+        await window.electronAPI.switchTab(id);
       }
     }
   };
@@ -106,9 +130,12 @@ const App: React.FC = () => {
       // Activate this tab in local state
       newTabs[newActiveIndex].isActive = true;
 
-      // Activate in main process if it's not about:blank
-      if (newTabs[newActiveIndex].url !== 'about:blank') {
-        window.electronAPI.switchTab(newActiveId);
+      // If the new active tab is about:blank, hide all browser views
+      if (newTabs[newActiveIndex].url === 'about:blank') {
+        await window.electronAPI.hideAllBrowserViews();
+      } else {
+        // Otherwise, activate in main process
+        await window.electronAPI.switchTab(newActiveId);
       }
     }
 
@@ -131,8 +158,11 @@ const App: React.FC = () => {
       }))
     );
 
-    // Switch to the browser view in main process if it's not about:blank
-    if (tab.url !== 'about:blank') {
+    // If switching to about:blank, hide all browser views
+    if (tab.url === 'about:blank') {
+      await window.electronAPI.hideAllBrowserViews();
+    } else {
+      // Otherwise, switch to the appropriate browser view
       await window.electronAPI.switchTab(id);
     }
   };
@@ -287,15 +317,23 @@ const App: React.FC = () => {
           onReorderTabs={reorderTabs}
         />
         <AddressBar
-          url={activeTab?.url || ''}
-          isLoading={activeTab?.isLoading || false}
+          url={tabs.find((tab) => tab.isActive)?.url || ''}
+          isLoading={tabs.find((tab) => tab.isActive)?.isLoading || false}
           onNavigate={navigateTo}
           onBack={goBack}
           onForward={goForward}
           onReload={reload}
         />
       </div>
-      <Browser tab={activeTab} />
+      {tabs.map((tab) => (
+        <div
+          key={tab.id}
+          className={`browser-view ${tab.isActive ? 'active' : ''}`}
+          style={{ display: tab.isActive ? 'block' : 'none' }}
+        >
+          <Browser tab={tab} navigateTo={navigateTo} />
+        </div>
+      ))}
     </div>
   );
 };
