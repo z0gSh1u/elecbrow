@@ -1,12 +1,15 @@
 # ElecBrow
 
-A multi-tab browser built with Electron and React that can be used as a standalone application or embedded in your Electron application.
+A simulated multi-tab browser built with Electron.
+
+<p align="center"><img src="./demo.gif" alt="demo" style="zoom: 50%;" /></p>
 
 ## Features ✨
 
 - Multi-tab browsing with drag-and-drop tab reordering
 - Address bar with navigation controls
-- Can be embedded into existing Electron applications or used as a standalone application
+- Can be embedded into existing Electron applications, or used as a standalone application
+- Chrome DevTools Protocol (CDP) friendly. Easily connected via playwright-mcp
 
 ## Installation ⚙️
 
@@ -20,12 +23,16 @@ pnpm add elecbrow
 
 ## Usage 🚀
 
+### A minimum working example
+
+See also [examples/simple.js](./examples/simple.js) .
+
 ```javascript
 // In your Electron main process file
 const { app } = require('electron');
 const { createBrowser, configureRemoteDebugging } = require('elecbrow');
 
-// Configure remote debugging BEFORE app is ready if you need
+// Configure remote debugging before app is ready if you need
 configureRemoteDebugging({
   enableRemoteDebugging: true,
   remoteDebuggingPort: 9222,
@@ -45,6 +52,14 @@ app.whenReady().then(() => {
     console.log('Browser window closed');
   });
 });
+```
+
+### Connect via playwright-mcp
+
+It's exactly recognized like a multi-tab Chrome browser if you've `enableRemoteDebugging`.
+
+```sh
+npx @modelcontextprotocol/inspector npx @playwright/mcp@latest --cdp-endpoint http://127.0.0.1:9222
 ```
 
 ## API 📚
@@ -76,20 +91,14 @@ Creates and opens an ElecBrow multi-tab browser window.
 
 ## Development 🛠️
 
-To set up the development environment:
-
-1. Install dependencies
-   ```bash
-   pnpm install
-   ```
-2. Run in development mode
-   ```bash
-   pnpm run dev
-   ```
-3. Try the example
-   ```bash
-   pnpm example
-   ```
+```bash
+# Install dependencies
+pnpm install
+# Run in development mode
+pnpm run dev
+# Try the example
+pnpm example
+```
 
 ## Building 🏗️
 
